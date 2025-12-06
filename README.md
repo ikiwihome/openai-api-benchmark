@@ -3,11 +3,7 @@
 🚀 一款功能强大的OpenAI API基准测试工具，支持多家兼容OpenAI API格式的提供商，实时测量**首字时延(TTFT)**和**每秒token数(TPS)**，帮助您快速评估和对比不同API提供商的性能。
 本工具所有配置数据均保存在浏览器本地，不会上传。
 
-
-
 ![screenshot-1](https://github.com/ikiwihome/openai-api-benchmark/raw/main/public/screenshot-1.png)
-
-
 
 ![screenshot-2](https://github.com/ikiwihome/openai-api-benchmark/raw/main/public/screenshot-2.png)
 
@@ -183,11 +179,11 @@ docker-compose up
 
 | 命令 | 说明 |
 |------|------|
+| `pnpm install` | 安装依赖 |
 | `pnpm run dev` | 启动开发服务器（含热重载） |
 | `pnpm run build` | 生产构建 |
 | `pnpm run generate` | 生成静态站点 |
 | `pnpm run preview` | 预览生产构建 |
-| `pnpm install` | 安装依赖 |
 
 ## 📝 配置说明
 
@@ -210,8 +206,8 @@ docker-compose up
 **字段说明：**
 
 - **name** (string) - API提供商名称，用于UI显示
-- **base_url** (string) - API基础URL，例如：`https://api.openai.com/v1`（注意：不包含路径）
-- **api_key** (string) - API认证密钥，形式为 `sk-...`
+- **base_url** (string) - API基础URL，例如：`https://api.openai.com/v1`
+- **api_key** (string) - API认证密钥，OpenAI和DeepSeek的API-Key格式为 `sk-...`
 - **model** (string) - 模型名称，例如：`gpt-3.5-turbo`、`deepseek-chat`
 - **enabled** (boolean) - 是否在测试中启用该API，设为 `false` 可临时禁用
 
