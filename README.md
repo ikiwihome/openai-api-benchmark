@@ -5,11 +5,11 @@
 
 
 
-![screenshot-1](https://github.com/ikiwihome/openai-api-benchmark/blob/main/public/screenshot-1.png)
+![screenshot-1](https://github.com/ikiwihome/openai-api-benchmark/raw/main/public/screenshot-1.png)
 
 
 
-![screenshot-2](https://github.com/ikiwihome/openai-api-benchmark/blob/main/public/screenshot-1.png)
+![screenshot-2](https://github.com/ikiwihome/openai-api-benchmark/raw/main/public/screenshot-2.png)
 
 ## ✨ 功能特性
 
