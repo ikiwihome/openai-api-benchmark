@@ -22,13 +22,10 @@
 |------|------|------|
 | [Nuxt](https://nuxt.com/) | 4.2.1 | 现代Vue 3全栈框架 |
 | [Vue](https://vuejs.org/) | 3.5.25 | 渐进式JavaScript框架 |
-| [shadcn/ui](https://ui.shadcn.com/) | 2.4.1 | 基于Radix UI的Vue组件库 |
+| [shadcn/ui](https://ui.shadcn.com/) | 2.4.2 | 基于Radix UI的Vue组件库 |
 | [Tailwind CSS](https://tailwindcss.com/) | 4.1.17 | 原子化CSS框架 |
 | [TypeScript](https://www.typescriptlang.org/) | 5.9.3 | 类型安全的JavaScript |
-| [VeeValidate](https://vee-validate.logaretm.com/) | 4.15.1 | Vue表单验证 |
-| [TanStack Vue Table](https://tanstack.com/table/v8/) | 8.21.3 | 无头表格库 |
 | [gpt-tokenizer](https://github.com/js-token/js-token) | 3.4.0 | Token计数器 |
-| pnpm | 10.24.0 | 快速、节省磁盘的包管理器 |
 
 ## 📁 项目结构
 
