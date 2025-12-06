@@ -624,7 +624,9 @@
 
       result.status = 'success'
       result.timeToFirstToken = firstTokenTime
-      result.tokensPerSecond = finalTokenCount > 0 ? (finalTokenCount / (totalTime / 1000)) : 0
+      // 流式阶段推理速度：排除等待首token的时间，只计算流式生成阶段的速度
+      const streamingTime = firstTokenTime !== null ? (totalTime - firstTokenTime) : totalTime
+      result.tokensPerSecond = finalTokenCount > 0 && streamingTime > 0 ? (finalTokenCount / (streamingTime / 1000)) : 0
 
       // 最终更新UI中的结果
       if (resultIndex >= 0 && resultIndex < testResults.value.length) {
