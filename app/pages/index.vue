@@ -6,242 +6,207 @@
   </div>
   <div v-else class="container mx-auto py-4 px-4">
     <input type="file" ref="fileInput" accept=".json,application/json" class="hidden" @change="handleImportFile" />
-  <div class="space-y-8">
-    <!-- 标题区域 -->
-    <div class="space-y-2">
-      <h1 class="text-2xl md:text-3xl font-bold tracking-tight">OpenAI API 并发测试工具</h1>
-      <p class="text-sm md:text-lg text-muted-foreground">
-        测试多家兼容OpenAI API格式的API提供商，测量首字时延和每秒token数
-      </p>
-      <p class="text-xs md:text-md text-muted-foreground">
-        数据安全：本工具所有配置数据均保存在浏览器本地，不会上传到任何服务器
-      </p>
-    </div>
+    <div class="space-y-8">
+      <!-- 标题区域 -->
+      <div class="space-y-2">
+        <h1 class="text-2xl md:text-3xl font-bold tracking-tight">OpenAI API 并发测试工具</h1>
+        <p class="text-sm md:text-lg text-muted-foreground">
+          测试多家兼容OpenAI API格式的API提供商，测量首字时延和每秒token数
+        </p>
+        <p class="text-xs md:text-md text-muted-foreground">
+          数据安全：本工具所有配置数据均保存在浏览器本地，不会上传到任何服务器
+        </p>
+      </div>
 
-    <!-- API配置列表 -->
-    <div class="space-y-4">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-2">
-        <h2 class="text-lg md:text-xl font-semibold">API配置列表</h2>
-        <div class="flex items-center gap-2 flex-wrap">
-          <Button @click="openAddDialog" variant="outline" size="sm" class="text-sm cursor-pointer">
-            <Plus class="w-4 h-4 mr-1 md:mr-2" />
-            添加配置
-          </Button>
-          <Button @click="triggerImport" variant="outline" size="sm" class="text-sm cursor-pointer ">
-            <UploadCloud class="w-4 h-4 mr-1 md:mr-2" />
-            导入配置
-          </Button>
-          <Button @click="exportConfigs" variant="outline" size="sm" class="text-sm cursor-pointer">
-            <DownloadCloud class="w-4 h-4 mr-1 md:mr-2" />
-            导出配置
-          </Button>
+      <!-- API配置列表 -->
+      <div class="space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-2">
+          <h2 class="text-lg md:text-xl font-semibold">API配置列表</h2>
+          <div class="flex items-center gap-2 flex-wrap">
+            <Button @click="openAddDialog" variant="outline" size="sm" class="text-sm cursor-pointer">
+              <Plus class="w-4 h-4 mr-1 md:mr-2" />
+              添加配置
+            </Button>
+            <Button @click="triggerImport" variant="outline" size="sm" class="text-sm cursor-pointer ">
+              <UploadCloud class="w-4 h-4 mr-1 md:mr-2" />
+              导入配置
+            </Button>
+            <Button @click="exportConfigs" variant="outline" size="sm" class="text-sm cursor-pointer">
+              <DownloadCloud class="w-4 h-4 mr-1 md:mr-2" />
+              导出配置
+            </Button>
+          </div>
+        </div>
+
+        <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <Card v-for="api in apiConfigs" :key="api.name" class="api-card p-3 md:p-4 transition-all duration-300 border-primary/50 shadow-sm hover:shadow-lg hover:border-primary/80" @click="handleCardClick(api, $event)">
+            <CardHeader class="p-0">
+              <div class="flex items-start justify-between gap-2 mb-3">
+                <CardTitle class="text-base md:text-lg font-medium truncate flex-1" :title="api.name">
+                  {{ api.name }}
+                </CardTitle>
+                <div class="flex items-center gap-1 shrink-0">
+                  <Switch class="cursor-pointer" :checked="api.enabled" :model-value="api.enabled" @update:checked="(val: boolean) => handleEnabledChange(api, val)" @update:modelValue="(val: boolean) => handleEnabledChange(api, val)" @change="(val: boolean) => handleEnabledChange(api, val)" @click="() => handleEnabledChange(api, !api.enabled)" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent class="p-0 space-y-2 md:space-y-3">
+              <div class="grid gap-1 md:gap-1.5 text-xs md:text-sm">
+                <div class="flex justify-between gap-2">
+                  <span class="text-muted-foreground shrink-0">模型ID:</span>
+                  <span class="font-medium truncate" :title="api.model">{{ api.model }}</span>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <span class="text-muted-foreground shrink-0">BaseURL:</span>
+                  <span class="text-muted-foreground font-medium truncate">
+                    {{ api.base_url }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1 md:gap-2 pt-2 md:pt-3 border-t">
+                <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8 cursor-pointer" @click="openEditDialog(api)" :title="'编辑此配置'">
+                  <Pencil class="w-3.5 md:w-4 h-3.5 md:h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8 cursor-pointer" @click="openDuplicateDialog(api)" :title="'复制此配置'">
+                  <Copy class="w-3.5 md:w-4 h-3.5 md:h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8 text-destructive hover:text-destructive cursor-pointer" @click="openDeleteDialog(api.name)" :title="'删除此配置'">
+                  <Trash2 class="w-3.5 md:w-4 h-3.5 md:h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        <Card v-for="api in apiConfigs" :key="api.name" class="api-card p-3 md:p-4 transition-all duration-300 border-primary/50 shadow-sm hover:shadow-lg hover:border-primary/80" @click="handleCardClick(api, $event)">
-          <CardHeader class="p-0">
-            <div class="flex items-start justify-between gap-2 mb-3">
-              <CardTitle class="text-base md:text-lg font-medium truncate flex-1" :title="api.name">
-                {{ api.name }}
-              </CardTitle>
-              <div class="flex items-center gap-1 shrink-0">
-                <Switch class="cursor-pointer" :checked="api.enabled" :model-value="api.enabled" @update:checked="(val: boolean) => handleEnabledChange(api, val)" @update:modelValue="(val: boolean) => handleEnabledChange(api, val)" @change="(val: boolean) => handleEnabledChange(api, val)" @click="() => handleEnabledChange(api, !api.enabled)" />
+      <!-- 添加/编辑配置对话框 -->
+      <Dialog :open="isDialogOpen" @update:open="isDialogOpen = $event">
+        <DialogContent class="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{{ isDuplicating ? '复制配置' : (isEditing ? '编辑配置' : '添加配置') }}</DialogTitle>
+            <DialogDescription>
+              配置API提供商的连接信息。Base URL通常以 /v1 结尾。
+            </DialogDescription>
+          </DialogHeader>
+          <div class="grid gap-4 py-4">
+            <div class="grid gap-2">
+              <Label htmlFor="name">名称</Label>
+              <Input id="name" v-model="configForm.name" placeholder="例如: OpenAI" />
+            </div>
+            <div class="grid gap-2">
+              <Label htmlFor="base_url">Base URL</Label>
+              <Input id="base_url" v-model="configForm.base_url" placeholder="https://api.openai.com/v1" />
+            </div>
+            <div class="grid gap-2">
+              <Label htmlFor="api_key">API Key</Label>
+              <div class="relative flex items-center">
+                <Input id="api_key" :model-value="(isEditing || isDuplicating) ? (apiKeyVisible ? configForm.api_key : maskApiKey(configForm.api_key)) : configForm.api_key" @update:model-value="(val: any) => configForm.api_key = val" placeholder="sk-..." :readonly="(isEditing || isDuplicating) && !apiKeyVisible" />
+                <button v-if="isEditing || isDuplicating" type="button" @click="apiKeyVisible = !apiKeyVisible" class="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors" :title="apiKeyVisible ? '隐藏API Key' : '显示API Key'">
+                  <Eye v-if="apiKeyVisible" class="w-4 h-4" />
+                  <EyeOff v-else class="w-4 h-4" />
+                </button>
               </div>
             </div>
-          </CardHeader>
-          <CardContent class="p-0 space-y-2 md:space-y-3">
-            <div class="grid gap-1 md:gap-1.5 text-xs md:text-sm">
-              <div class="flex justify-between gap-2">
-                <span class="text-muted-foreground shrink-0">模型ID:</span>
-                <span class="font-medium truncate" :title="api.model">{{ api.model }}</span>
-              </div>
-              <div class="flex justify-between gap-2">
-                <span class="text-muted-foreground shrink-0">BaseURL:</span>
-                <span class="text-muted-foreground font-medium truncate">
-                  {{ api.base_url }}
-                </span>
-              </div>
+            <div class="grid gap-2">
+              <Label htmlFor="model">模型ID</Label>
+              <Input id="model" v-model="configForm.model" placeholder="gpt-3.5-turbo" />
             </div>
-
-            <div class="flex items-center gap-1 md:gap-2 pt-2 md:pt-3 border-t">
-              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8 cursor-pointer" @click="openEditDialog(api)" :title="'编辑此配置'">
-                <Pencil class="w-3.5 md:w-4 h-3.5 md:h-4" />
-              </Button>
-              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8 cursor-pointer" @click="openDuplicateDialog(api)" :title="'复制此配置'">
-                <Copy class="w-3.5 md:w-4 h-3.5 md:h-4" />
-              </Button>
-              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8 text-destructive hover:text-destructive cursor-pointer" @click="openDeleteDialog(api.name)" :title="'删除此配置'">
-                <Trash2 class="w-3.5 md:w-4 h-3.5 md:h-4" />
-              </Button>
+            <div class="flex items-center justify-between">
+              <Label htmlFor="enabled">启用</Label>
+              <Switch v-model="configForm.enabled" />
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-
-    <!-- 添加/编辑配置对话框 -->
-    <Dialog :open="isDialogOpen" @update:open="isDialogOpen = $event">
-      <DialogContent class="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{{ isDuplicating ? '复制配置' : (isEditing ? '编辑配置' : '添加配置') }}</DialogTitle>
-          <DialogDescription>
-            配置API提供商的连接信息。Base URL通常以 /v1 结尾。
-          </DialogDescription>
-        </DialogHeader>
-        <div class="grid gap-4 py-4">
-          <div class="grid gap-2">
-            <Label htmlFor="name">名称</Label>
-            <Input id="name" v-model="configForm.name" placeholder="例如: OpenAI" />
-          </div>
-          <div class="grid gap-2">
-            <Label htmlFor="base_url">Base URL</Label>
-            <Input id="base_url" v-model="configForm.base_url" placeholder="https://api.openai.com/v1" />
-          </div>
-          <div class="grid gap-2">
-            <Label htmlFor="api_key">API Key</Label>
-            <div class="relative flex items-center">
-              <Input 
-                id="api_key" 
-                :model-value="(isEditing || isDuplicating) ? (apiKeyVisible ? configForm.api_key : maskApiKey(configForm.api_key)) : configForm.api_key"
-                @update:model-value="(val: any) => configForm.api_key = val"
-                placeholder="sk-..." 
-                :readonly="(isEditing || isDuplicating) && !apiKeyVisible"
-              />
-              <button
-                v-if="isEditing || isDuplicating"
-                type="button"
-                @click="apiKeyVisible = !apiKeyVisible"
-                class="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
-                :title="apiKeyVisible ? '隐藏API Key' : '显示API Key'"
-              >
-                <Eye v-if="apiKeyVisible" class="w-4 h-4" />
-                <EyeOff v-else class="w-4 h-4" />
-              </button>
+            <!-- BaseURL测试结果提示 -->
+            <div v-if="testBaseURLStatus !== null" :class="['p-3 rounded-md text-sm', testBaseURLStatus.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800']">
+              <div class="font-medium">{{ testBaseURLStatus.message }}</div>
+              <div v-if="testBaseURLStatus.details" class="text-xs mt-1 opacity-80">{{ testBaseURLStatus.details }}</div>
             </div>
           </div>
-          <div class="grid gap-2">
-            <Label htmlFor="model">模型ID</Label>
-            <Input id="model" v-model="configForm.model" placeholder="gpt-3.5-turbo" />
-          </div>
-          <div class="flex items-center justify-between">
-            <Label htmlFor="enabled">启用</Label>
-            <Switch v-model="configForm.enabled" />
-          </div>
-          <!-- BaseURL测试结果提示 -->
-          <div v-if="testBaseURLStatus !== null" :class="['p-3 rounded-md text-sm', testBaseURLStatus.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800']">
-            <div class="font-medium">{{ testBaseURLStatus.message }}</div>
-            <div v-if="testBaseURLStatus.details" class="text-xs mt-1 opacity-80">{{ testBaseURLStatus.details }}</div>
-          </div>
-        </div>
-        <DialogFooter class="flex gap-2 pt-4">
-          <Button variant="outline" @click="testBaseURL" :disabled="!configForm.base_url || !configForm.api_key || isTestingBaseURL" class="flex items-center gap-2">
-            <Spinner v-if="isTestingBaseURL" />
-            {{ isTestingBaseURL ? '测试中...' : '测试' }}
-          </Button>
-          <Button variant="outline" @click="isDialogOpen = false">取消</Button>
-          <Button @click="saveConfig">保存</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter class="flex gap-2 pt-4">
+            <Button variant="outline" @click="testBaseURL" :disabled="!configForm.base_url || !configForm.api_key || isTestingBaseURL" class="flex items-center gap-2">
+              <Spinner v-if="isTestingBaseURL" />
+              {{ isTestingBaseURL ? '测试中...' : '测试' }}
+            </Button>
+            <Button variant="outline" @click="isDialogOpen = false">取消</Button>
+            <Button @click="saveConfig">保存</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-    <!-- 删除确认对话框 -->
-    <Dialog :open="deleteConfirmOpen" @update:open="deleteConfirmOpen = $event">
-      <DialogContent class="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>删除配置</DialogTitle>
-          <DialogDescription>
-            确定要删除配置 <span class="font-semibold text-foreground">{{ deleteTargetName }}</span> 吗？此操作无法撤销。
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter class="flex gap-2 pt-4">
-          <Button variant="outline" @click="cancelDeleteApi">取消</Button>
-          <Button variant="destructive" @click="confirmDeleteApi">删除</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <!-- 删除确认对话框 -->
+      <Dialog :open="deleteConfirmOpen" @update:open="deleteConfirmOpen = $event">
+        <DialogContent class="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>删除配置</DialogTitle>
+            <DialogDescription>
+              确定要删除配置 <span class="font-semibold text-foreground">{{ deleteTargetName }}</span> 吗？此操作无法撤销。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter class="flex gap-2 pt-4">
+            <Button variant="outline" @click="cancelDeleteApi">取消</Button>
+            <Button variant="destructive" @click="confirmDeleteApi">删除</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-    <!-- 测试控制区域 -->
-    <Card class="p-3 md:p-6">
-      <CardHeader class="p-0 pb-3 md:pb-4">
-        <CardTitle class="text-lg md:text-xl">测试控制</CardTitle>
-        <CardDescription class="text-xs md:text-sm">
-          点击开始按钮将并发测试所有启用的API提供商
-        </CardDescription>
-      </CardHeader>
-      <CardContent class="p-0 space-y-3 md:space-y-4">
-        <!-- 测试消息输入 -->
-        <div class="space-y-2">
-          <Label for="test-message" class="text-xs md:text-sm">测试消息</Label>
-          <Textarea id="test-message" v-model="testMessage" placeholder="输入要发送的测试消息..." class="min-h-16 md:min-h-20 text-xs md:text-sm resize-none" />
-        </div>
+      <!-- 测试控制区域 -->
+      <Card class="p-3 md:p-6">
+        <CardHeader class="p-0 pb-3 md:pb-4">
+          <CardTitle class="text-lg md:text-xl">测试控制</CardTitle>
+          <CardDescription class="text-xs md:text-sm">
+            点击开始按钮将并发测试所有启用的API提供商
+          </CardDescription>
+        </CardHeader>
+        <CardContent class="p-0 space-y-3 md:space-y-4">
+          <!-- 测试消息输入 -->
+          <div class="space-y-2">
+            <Label for="test-message" class="text-xs md:text-sm">测试消息</Label>
+            <Textarea id="test-message" v-model="testMessage" placeholder="输入要发送的测试消息..." class="min-h-16 md:min-h-20 text-xs md:text-sm resize-none" />
+          </div>
 
-        <!-- 最大输出Token数 -->
-        <div class="space-y-2">
-          <Label for="max-tokens" class="text-xs md:text-sm">最大输出Token数</Label>
-          <Input 
-            id="max-tokens" 
-            v-model.number="maxTokens" 
-            type="number" 
-            min="10" 
-            max="2000" 
-            placeholder="500" 
-            class="w-full text-xs md:text-sm"
-            @input="(e: Event) => {
+          <!-- 最大输出Token数 -->
+          <div class="space-y-2">
+            <Label for="max-tokens" class="text-xs md:text-sm">最大输出Token数</Label>
+            <Input id="max-tokens" v-model.number="maxTokens" type="number" min="10" max="2000" placeholder="500" class="w-full text-xs md:text-sm" @input="(e: Event) => {
               const value = parseInt((e.target as HTMLInputElement).value)
               if (value < 10) maxTokens = 10
               else if (value > 2000) maxTokens = 2000
-            }"
-          />
-          <p class="text-xs text-muted-foreground">范围: 10 - 2000</p>
-        </div>
-
-        <!-- 控制按钮 -->
-        <div class="flex gap-3">
-          <Button @click="startTesting" :disabled="isTesting || !hasEnabledApis" class="flex-1 flex items-center justify-center gap-2 text-xs md:text-sm cursor-pointer">
-            <Spinner v-if="isTesting" class="h-3.5 w-3.5 md:h-4 md:w-4" />
-            {{ isTesting ? '测试中...' : '开始测试' }}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-
-    <!-- 测试结果 -->
-    <Card class="p-3 md:p-6">
-      <CardHeader class="p-0 pb-3 md:pb-4">
-        <CardTitle class="text-lg md:text-xl">测试结果</CardTitle>
-        <CardDescription class="text-xs md:text-sm">
-          各API提供商的性能测试结果
-        </CardDescription>
-      </CardHeader>
-      <CardContent class="p-0">
-        <div class="overflow-x-auto">
-          <!-- 测试结果的表格区域 -->
-          <TestResultTable
-            v-if="isTesting"
-            :title="'当前测试（进行中）'"
-            :results="testResults"
-            :getResultBadgeVariant="getResultBadgeVariant"
-            :getResultStatusText="getResultStatusText"
-          />
-
-          <div v-if="!testHistory || testHistory.length === 0" class="p-4 text-muted-foreground">暂无测试历史</div>
-
-          <div>
-            <TestResultTable
-              v-for="run in testHistory"
-              :key="run.runAt"
-              :title="'测试时间：' + new Date(run.runAt).toLocaleString()"
-              :results="run.results"
-              :runAt="run.runAt"
-              :getResultBadgeVariant="getResultBadgeVariant"
-              :getResultStatusText="getResultStatusText"
-            />
+            }" />
+            <p class="text-xs text-muted-foreground">范围: 10 - 2000</p>
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
+
+          <!-- 控制按钮 -->
+          <div class="flex gap-3">
+            <Button @click="startTesting" :disabled="isTesting || !hasEnabledApis" class="flex-1 flex items-center justify-center gap-2 text-xs md:text-sm cursor-pointer">
+              <Spinner v-if="isTesting" class="h-3.5 w-3.5 md:h-4 md:w-4" />
+              {{ isTesting ? '测试中...' : '开始测试' }}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <!-- 测试结果 -->
+      <Card class="p-3 md:p-6">
+        <CardHeader class="p-0 pb-3 md:pb-4">
+          <CardTitle class="text-lg md:text-xl">测试结果</CardTitle>
+          <CardDescription class="text-xs md:text-sm">
+            各API提供商的性能测试结果
+          </CardDescription>
+        </CardHeader>
+        <CardContent class="p-0">
+          <div class="overflow-x-auto">
+            <!-- 测试结果的表格区域 -->
+            <TestResultTable v-if="isTesting" :title="'当前测试（进行中）'" :results="testResults" :getResultBadgeVariant="getResultBadgeVariant" :getResultStatusText="getResultStatusText" />
+
+            <div v-if="!testHistory || testHistory.length === 0" class="p-4 text-muted-foreground">暂无测试历史</div>
+
+            <div>
+              <TestResultTable v-for="run in testHistory" :key="run.runAt" :title="'测试时间：' + new Date(run.runAt).toLocaleString()" :results="run.results" :runAt="run.runAt" :getResultBadgeVariant="getResultBadgeVariant" :getResultStatusText="getResultStatusText" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   </div>
 </div>
 </template>
@@ -483,7 +448,7 @@ model: ${api.model}`
       newName = `${api.name} (复制 ${counter})`
       counter++
     }
-    
+
     // 填充表单
     configForm.value = {
       name: newName,
@@ -695,7 +660,7 @@ model: ${api.model}`
               if (!firstTokenReceived && parsed.choices?.[0]?.delta?.content) {
                 firstTokenTime = performance.now() - startTime
                 firstTokenReceived = true
-                
+
                 // 首字到达时立即更新显示
                 if (resultIndex >= 0 && resultIndex < testResults.value.length) {
                   const item = testResults.value[resultIndex]
@@ -719,7 +684,7 @@ model: ${api.model}`
                     // 如果编码失败，使用简单的字符估算（1 token ≈ 4字符）
                     tokenCount = Math.ceil(fullResponse.length / 4)
                   }
-                  
+
                   const currentTps = tokenCount > 0 ? (tokenCount / (currentTime / 1000)) : 0
                   if (resultIndex >= 0 && resultIndex < testResults.value.length) {
                     const item = testResults.value[resultIndex]
@@ -853,9 +818,9 @@ model: ${api.model}`
       }
 
       // 增强的类型校验
-      const valid = newApis.every(item => 
-        item && 
-        typeof item.name === 'string' && 
+      const valid = newApis.every(item =>
+        item &&
+        typeof item.name === 'string' &&
         typeof item.base_url === 'string' &&
         item.name.trim() !== '' &&
         item.base_url.trim() !== ''
