@@ -99,7 +99,25 @@
           </div>
           <div class="grid gap-2">
             <Label htmlFor="api_key">API Key</Label>
-            <Input id="api_key" v-model="configForm.api_key" type="password" placeholder="sk-..." />
+            <div class="relative flex items-center">
+              <Input 
+                id="api_key" 
+                :model-value="isEditing ? (apiKeyVisible ? configForm.api_key : maskApiKey(configForm.api_key)) : configForm.api_key"
+                @update:model-value="(val: any) => configForm.api_key = val"
+                placeholder="sk-..." 
+                :readonly="isEditing && !apiKeyVisible"
+              />
+              <button
+                v-if="isEditing"
+                type="button"
+                @click="apiKeyVisible = !apiKeyVisible"
+                class="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+                :title="apiKeyVisible ? '隐藏API Key' : '显示API Key'"
+              >
+                <Eye v-if="apiKeyVisible" class="w-4 h-4" />
+                <EyeOff v-else class="w-4 h-4" />
+              </button>
+            </div>
           </div>
           <div class="grid gap-2">
             <Label htmlFor="model">模型</Label>
@@ -251,7 +269,7 @@
     DialogTitle,
   } from '~/components/ui/dialog'
   import { Input } from '~/components/ui/input'
-  import { Plus, Pencil, Trash2, UploadCloud, DownloadCloud, Copy } from 'lucide-vue-next'
+  import { Plus, Pencil, Trash2, UploadCloud, DownloadCloud, Copy, Eye, EyeOff } from 'lucide-vue-next'
   import { encode } from 'gpt-tokenizer'
   import TestResultTable from '~/components/TestResultTable.vue'
 
@@ -301,6 +319,7 @@
   })
   const isTestingBaseURL = ref(false)
   const testBaseURLStatus = ref<{ success: boolean; message: string; details?: string } | null>(null)
+  const apiKeyVisible = ref(false)
 
   // 加载API配置（从 localStorage）
   const loadApiConfigs = () => {
@@ -351,6 +370,7 @@
     editingOriginalName.value = ''
     isEditing.value = false
     testBaseURLStatus.value = null
+    apiKeyVisible.value = false
   }
 
   // 测试BaseURL连接
@@ -413,6 +433,7 @@
     editingOriginalName.value = api.name
     isEditing.value = true
     testBaseURLStatus.value = null
+    apiKeyVisible.value = false
     isDialogOpen.value = true
   }
 
@@ -540,6 +561,20 @@
       case 'disabled': return '已禁用'
       default: return status
     }
+  }
+
+  // API Key 加密函数：显示开头4字符***中间星号***结尾4字符
+  const maskApiKey = (apiKey: string): string => {
+    if (!apiKey) {
+      return ''
+    }
+    if (apiKey.length <= 8) {
+      return '*'.repeat(apiKey.length)
+    }
+    const start = apiKey.slice(0, 4)
+    const end = apiKey.slice(-4)
+    const middle = '*'.repeat(Math.max(3, apiKey.length - 8))
+    return `${start}${middle}${end}`
   }
 
   // 测试单个API
