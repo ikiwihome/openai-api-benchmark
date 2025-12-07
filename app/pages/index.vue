@@ -64,10 +64,13 @@
             </div>
 
             <div class="flex items-center gap-2 pt-2 border-t">
-              <Button variant="ghost" size="icon" class="h-8 w-8" @click="openEditDialog(api)">
+              <Button variant="ghost" size="icon" class="h-8 w-8" @click="openEditDialog(api)" :title="'编辑此配置'">
                 <Pencil class="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" class="h-8 w-8 text-destructive hover:text-destructive" @click="deleteApi(api.name)">
+              <Button variant="ghost" size="icon" class="h-8 w-8" @click="duplicateApi(api)" :title="'复制此配置'">
+                <Copy class="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" class="h-8 w-8 text-destructive hover:text-destructive" @click="deleteApi(api.name)" :title="'删除此配置'">
                 <Trash2 class="w-4 h-4" />
               </Button>
             </div>
@@ -122,6 +125,22 @@
           </Button>
           <Button variant="outline" @click="isDialogOpen = false">取消</Button>
           <Button @click="saveConfig">保存</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- 删除确认对话框 -->
+    <Dialog :open="deleteConfirmOpen" @update:open="deleteConfirmOpen = $event">
+      <DialogContent class="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>删除配置</DialogTitle>
+          <DialogDescription>
+            确定要删除配置 <span class="font-semibold text-foreground">{{ deleteTargetName }}</span> 吗？此操作无法撤销。
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter class="flex gap-2 pt-4">
+          <Button variant="outline" @click="cancelDeleteApi">取消</Button>
+          <Button variant="destructive" @click="confirmDeleteApi">删除</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -232,7 +251,7 @@
     DialogTitle,
   } from '~/components/ui/dialog'
   import { Input } from '~/components/ui/input'
-  import { Plus, Pencil, Trash2, UploadCloud, DownloadCloud } from 'lucide-vue-next'
+  import { Plus, Pencil, Trash2, UploadCloud, DownloadCloud, Copy } from 'lucide-vue-next'
   import { encode } from 'gpt-tokenizer'
   import TestResultTable from '~/components/TestResultTable.vue'
 
@@ -271,6 +290,8 @@
   const isDialogOpen = ref(false)
   const isEditing = ref(false)
   const editingOriginalName = ref('')
+  const deleteConfirmOpen = ref(false)
+  const deleteTargetName = ref('')
   const configForm = ref<ApiConfig>({
     name: '',
     base_url: '',
@@ -395,6 +416,30 @@
     isDialogOpen.value = true
   }
 
+  // 复制配置
+  const duplicateApi = (api: ApiConfig) => {
+    // 生成新的唯一名称
+    let newName = `${api.name} (复制)`
+    let counter = 1
+    while (apiConfigs.value.some(config => config.name === newName)) {
+      newName = `${api.name} (复制 ${counter})`
+      counter++
+    }
+    
+    // 填充表单
+    configForm.value = {
+      name: newName,
+      base_url: api.base_url,
+      api_key: api.api_key,
+      model: api.model,
+      enabled: api.enabled
+    }
+    editingOriginalName.value = ''
+    isEditing.value = false
+    testBaseURLStatus.value = null
+    isDialogOpen.value = true
+  }
+
   // 保存配置 (从对话框)
   const saveConfig = () => {
     if (!configForm.value.name || !configForm.value.base_url) return
@@ -448,15 +493,28 @@
 
   // 删除配置
   const deleteApi = (name: string) => {
-    if (confirm(`确定要删除配置 "${name}" 吗？`)) {
-      const index = apiConfigs.value.findIndex(api => api.name === name)
-      if (index !== -1) {
-        // 使用 splice 确保 Vue 能够检测到数组变化
-        apiConfigs.value.splice(index, 1)
-        // useStorage 自动同步到 localStorage
-        initializeTestResults()
-      }
+    deleteTargetName.value = name
+    deleteConfirmOpen.value = true
+  }
+
+  // 确认删除配置
+  const confirmDeleteApi = () => {
+    const name = deleteTargetName.value
+    const index = apiConfigs.value.findIndex(api => api.name === name)
+    if (index !== -1) {
+      // 使用 splice 确保 Vue 能够检测到数组变化
+      apiConfigs.value.splice(index, 1)
+      // useStorage 自动同步到 localStorage
+      initializeTestResults()
     }
+    deleteConfirmOpen.value = false
+    deleteTargetName.value = ''
+  }
+
+  // 取消删除
+  const cancelDeleteApi = () => {
+    deleteConfirmOpen.value = false
+    deleteTargetName.value = ''
   }
 
   // 计算属性
