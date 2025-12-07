@@ -101,7 +101,7 @@
             <div class="grid gap-2">
               <Label htmlFor="api_key">API Key</Label>
               <div class="relative flex items-center">
-                <Input id="api_key" :model-value="(isEditing || isDuplicating) ? (apiKeyVisible ? configForm.api_key : maskApiKey(configForm.api_key)) : configForm.api_key" @update:model-value="(val: any) => configForm.api_key = val" placeholder="sk-..." :readonly="(isEditing || isDuplicating) && !apiKeyVisible" />
+                <Input id="api_key" :model-value="(isEditing || isDuplicating) ? (apiKeyVisible ? configForm.api_key : maskApiKey(configForm.api_key)) : configForm.api_key" @update:model-value="(val: any) => configForm.api_key = val" placeholder="sk-..." />
                 <button v-if="isEditing || isDuplicating" type="button" @click="apiKeyVisible = !apiKeyVisible" class="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors" :title="apiKeyVisible ? '隐藏API Key' : '显示API Key'">
                   <Eye v-if="apiKeyVisible" class="w-4 h-4" />
                   <EyeOff v-else class="w-4 h-4" />
@@ -400,21 +400,21 @@ model: ${api.model}`
         const data = await response.json()
         testBaseURLStatus.value = {
           success: true,
-          message: '✓ BaseURL连接成功',
+          message: '连接成功',
           details: `获取到 ${data.data?.length || 0} 个模型`
         }
       } else {
         const errorText = await response.text().catch(() => response.statusText)
         testBaseURLStatus.value = {
           success: false,
-          message: '✗ BaseURL连接失败',
+          message: '连接失败',
           details: `HTTP ${response.status}: ${errorText || response.statusText}`
         }
       }
     } catch (error) {
       testBaseURLStatus.value = {
         success: false,
-        message: '✗ 连接错误',
+        message: '连接错误',
         details: error instanceof Error ? error.message : '未知错误'
       }
     } finally {
