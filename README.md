@@ -3,9 +3,9 @@
 🚀 一款功能强大的OpenAI API基准测试工具，支持多家兼容OpenAI API格式的提供商，实时测量**首字时延(TTFT)**和**每秒token数(TPS)**，帮助您快速评估和对比不同API提供商的性能。
 本工具所有配置数据均保存在浏览器本地，不会上传。
 
-![screenshot-1](https://github.com/ikiwihome/openai-api-benchmark/raw/main/public/screenshot-1.png)
+<img src="public/screenshot-1.png" alt="主界面" />
 
-![screenshot-2](https://github.com/ikiwihome/openai-api-benchmark/raw/main/public/screenshot-2.png)
+<img src="public/screenshot-2.png" alt="主界面" />
 
 ## ✨ 功能特性
 
