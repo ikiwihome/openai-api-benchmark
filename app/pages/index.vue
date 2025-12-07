@@ -8,70 +8,70 @@
   <div class="space-y-8">
     <!-- 标题区域 -->
     <div class="space-y-2">
-      <h1 class="text-3xl font-bold tracking-tight">OpenAI API 并发测试工具</h1>
-      <p class="text-muted-foreground">
+      <h1 class="text-2xl md:text-3xl font-bold tracking-tight">OpenAI API 并发测试工具</h1>
+      <p class="text-sm md:text-lg text-muted-foreground">
         测试多家兼容OpenAI API格式的API提供商，测量首字时延和每秒token数
       </p>
-      <p class="text-muted-foreground">
+      <p class="text-sm md:text-lg text-muted-foreground">
         所有配置数据均保存在浏览器本地
       </p>
     </div>
 
     <!-- API配置列表 -->
     <div class="space-y-4">
-      <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-semibold">API配置列表</h2>
-        <div class="flex items-center gap-2">
-          <Button @click="openAddDialog" variant="outline" size="sm">
-            <Plus class="w-4 h-4 mr-2" />
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-2">
+        <h2 class="text-lg md:text-xl font-semibold">API配置列表</h2>
+        <div class="flex items-center gap-2 flex-wrap">
+          <Button @click="openAddDialog" variant="outline" size="sm" class="text-sm">
+            <Plus class="w-4 h-4 mr-1 md:mr-2" />
             添加配置
           </Button>
-          <Button @click="triggerImport" variant="outline" size="sm">
-            <UploadCloud class="w-4 h-4 mr-2" />
+          <Button @click="triggerImport" variant="outline" size="sm" class="text-sm">
+            <UploadCloud class="w-4 h-4 mr-1 md:mr-2" />
             导入配置
           </Button>
-          <Button @click="exportConfigs" variant="outline" size="sm">
-            <DownloadCloud class="w-4 h-4 mr-2" />
+          <Button @click="exportConfigs" variant="outline" size="sm" class="text-sm">
+            <DownloadCloud class="w-4 h-4 mr-1 md:mr-2" />
             导出配置
           </Button>
         </div>
       </div>
 
-      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card v-for="api in apiConfigs" :key="api.name" class="p-4 transition-all duration-200 border-primary/50 shadow-sm">
+      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <Card v-for="api in apiConfigs" :key="api.name" class="p-3 md:p-4 transition-all duration-200 border-primary/50 shadow-sm">
           <CardHeader class="p-0">
-            <div class="flex items-start justify-between gap-2">
-              <CardTitle class="text-lg font-medium truncate flex-1" :title="api.name">
+            <div class="flex items-start justify-between gap-2 mb-3">
+              <CardTitle class="text-base md:text-lg font-medium truncate flex-1" :title="api.name">
                 {{ api.name }}
               </CardTitle>
-              <div class="flex items-center gap-1">
+              <div class="flex items-center gap-1 shrink-0">
                 <Switch :checked="api.enabled" :model-value="api.enabled" @update:checked="(val: boolean) => handleEnabledChange(api, val)" @update:modelValue="(val: boolean) => handleEnabledChange(api, val)" @change="(val: boolean) => handleEnabledChange(api, val)" @click="() => handleEnabledChange(api, !api.enabled)" />
               </div>
             </div>
           </CardHeader>
-          <CardContent class="p-0 space-y-3">
-            <div class="grid gap-1.5 text-sm">
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">模型:</span>
-                <span class="font-medium truncate max-w-[300px]" :title="api.model">{{ api.model }}</span>
+          <CardContent class="p-0 space-y-2 md:space-y-3">
+            <div class="grid gap-1 md:gap-1.5 text-xs md:text-sm">
+              <div class="flex justify-between gap-2">
+                <span class="text-muted-foreground shrink-0">模型ID:</span>
+                <span class="font-medium truncate" :title="api.model">{{ api.model }}</span>
               </div>
-              <div class="flex justify-between">
-                <span class="text-muted-foreground">BaseURL:</span>
-                <span class="text-muted-foreground font-medium truncate max-w-[300px]">
+              <div class="flex justify-between gap-2">
+                <span class="text-muted-foreground shrink-0">BaseURL:</span>
+                <span class="text-muted-foreground font-medium truncate">
                   {{ api.base_url }}
                 </span>
               </div>
             </div>
 
-            <div class="flex items-center gap-2 pt-2 border-t">
-              <Button variant="ghost" size="icon" class="h-8 w-8" @click="openEditDialog(api)" :title="'编辑此配置'">
-                <Pencil class="w-4 h-4" />
+            <div class="flex items-center gap-1 md:gap-2 pt-2 md:pt-3 border-t">
+              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8" @click="openEditDialog(api)" :title="'编辑此配置'">
+                <Pencil class="w-3.5 md:w-4 h-3.5 md:h-4" />
               </Button>
-              <Button variant="ghost" size="icon" class="h-8 w-8" @click="openDuplicateDialog(api)" :title="'复制此配置'">
-                <Copy class="w-4 h-4" />
+              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8" @click="openDuplicateDialog(api)" :title="'复制此配置'">
+                <Copy class="w-3.5 md:w-4 h-3.5 md:h-4" />
               </Button>
-              <Button variant="ghost" size="icon" class="h-8 w-8 text-destructive hover:text-destructive" @click="openDeleteDialog(api.name)" :title="'删除此配置'">
-                <Trash2 class="w-4 h-4" />
+              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8 text-destructive hover:text-destructive" @click="openDeleteDialog(api.name)" :title="'删除此配置'">
+                <Trash2 class="w-3.5 md:w-4 h-3.5 md:h-4" />
               </Button>
             </div>
           </CardContent>
@@ -120,7 +120,7 @@
             </div>
           </div>
           <div class="grid gap-2">
-            <Label htmlFor="model">模型</Label>
+            <Label htmlFor="model">模型ID</Label>
             <Input id="model" v-model="configForm.model" placeholder="gpt-3.5-turbo" />
           </div>
           <div class="flex items-center justify-between">
@@ -164,23 +164,23 @@
     </Dialog>
 
     <!-- 测试控制区域 -->
-    <Card class="p-6">
-      <CardHeader class="p-0 pb-4">
-        <CardTitle>测试控制</CardTitle>
-        <CardDescription>
+    <Card class="p-3 md:p-6">
+      <CardHeader class="p-0 pb-3 md:pb-4">
+        <CardTitle class="text-lg md:text-xl">测试控制</CardTitle>
+        <CardDescription class="text-xs md:text-sm">
           点击开始按钮将并发测试所有启用的API提供商
         </CardDescription>
       </CardHeader>
-      <CardContent class="p-0 space-y-4">
+      <CardContent class="p-0 space-y-3 md:space-y-4">
         <!-- 测试消息输入 -->
         <div class="space-y-2">
-          <Label for="test-message">测试消息</Label>
-          <Textarea id="test-message" v-model="testMessage" placeholder="输入要发送的测试消息..." class="min-h-[80px]" />
+          <Label for="test-message" class="text-xs md:text-sm">测试消息</Label>
+          <Textarea id="test-message" v-model="testMessage" placeholder="输入要发送的测试消息..." class="min-h-16 md:min-h-20 text-xs md:text-sm" />
         </div>
 
         <!-- 最大输出Token数 -->
         <div class="space-y-2">
-          <Label for="max-tokens">最大输出Token数</Label>
+          <Label for="max-tokens" class="text-xs md:text-sm">最大输出Token数</Label>
           <Input 
             id="max-tokens" 
             v-model.number="maxTokens" 
@@ -188,7 +188,7 @@
             min="10" 
             max="2000" 
             placeholder="500" 
-            class="w-full"
+            class="w-full text-xs md:text-sm"
             @input="(e: Event) => {
               const value = parseInt((e.target as HTMLInputElement).value)
               if (value < 10) maxTokens = 10
@@ -200,8 +200,8 @@
 
         <!-- 控制按钮 -->
         <div class="flex gap-3">
-          <Button @click="startTesting" :disabled="isTesting || !hasEnabledApis" class="flex-1 flex items-center justify-center gap-2">
-            <svg v-if="isTesting" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <Button @click="startTesting" :disabled="isTesting || !hasEnabledApis" class="flex-1 flex items-center justify-center gap-2 text-xs md:text-sm">
+            <svg v-if="isTesting" class="animate-spin h-3.5 w-3.5 md:h-4 md:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -212,10 +212,10 @@
     </Card>
 
     <!-- 测试结果 -->
-    <Card class="p-6">
-      <CardHeader class="p-0 pb-4">
-        <CardTitle>测试结果</CardTitle>
-        <CardDescription>
+    <Card class="p-3 md:p-6">
+      <CardHeader class="p-0 pb-3 md:pb-4">
+        <CardTitle class="text-lg md:text-xl">测试结果</CardTitle>
+        <CardDescription class="text-xs md:text-sm">
           各API提供商的性能测试结果
         </CardDescription>
       </CardHeader>
