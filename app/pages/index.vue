@@ -67,10 +67,10 @@
               <Button variant="ghost" size="icon" class="h-8 w-8" @click="openEditDialog(api)" :title="'编辑此配置'">
                 <Pencil class="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" class="h-8 w-8" @click="duplicateApi(api)" :title="'复制此配置'">
+              <Button variant="ghost" size="icon" class="h-8 w-8" @click="openDuplicateDialog(api)" :title="'复制此配置'">
                 <Copy class="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" class="h-8 w-8 text-destructive hover:text-destructive" @click="deleteApi(api.name)" :title="'删除此配置'">
+              <Button variant="ghost" size="icon" class="h-8 w-8 text-destructive hover:text-destructive" @click="openDeleteDialog(api.name)" :title="'删除此配置'">
                 <Trash2 class="w-4 h-4" />
               </Button>
             </div>
@@ -83,7 +83,7 @@
     <Dialog :open="isDialogOpen" @update:open="isDialogOpen = $event">
       <DialogContent class="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{{ isEditing ? '编辑配置' : '添加配置' }}</DialogTitle>
+          <DialogTitle>{{ isDuplicating ? '复制配置' : (isEditing ? '编辑配置' : '添加配置') }}</DialogTitle>
           <DialogDescription>
             配置API提供商的连接信息。Base URL通常以 /v1 结尾。
           </DialogDescription>
@@ -102,13 +102,13 @@
             <div class="relative flex items-center">
               <Input 
                 id="api_key" 
-                :model-value="isEditing ? (apiKeyVisible ? configForm.api_key : maskApiKey(configForm.api_key)) : configForm.api_key"
+                :model-value="(isEditing || isDuplicating) ? (apiKeyVisible ? configForm.api_key : maskApiKey(configForm.api_key)) : configForm.api_key"
                 @update:model-value="(val: any) => configForm.api_key = val"
                 placeholder="sk-..." 
-                :readonly="isEditing && !apiKeyVisible"
+                :readonly="(isEditing || isDuplicating) && !apiKeyVisible"
               />
               <button
-                v-if="isEditing"
+                v-if="isEditing || isDuplicating"
                 type="button"
                 @click="apiKeyVisible = !apiKeyVisible"
                 class="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
@@ -175,7 +175,7 @@
         <!-- 测试消息输入 -->
         <div class="space-y-2">
           <Label for="test-message">测试消息</Label>
-          <Textarea id="test-message" v-model="testMessage" placeholder="输入要发送的测试消息..." class="min-h-[100px]" />
+          <Textarea id="test-message" v-model="testMessage" placeholder="输入要发送的测试消息..." class="min-h-[80px]" />
         </div>
 
         <!-- 最大输出Token数 -->
@@ -307,6 +307,7 @@
   // 对话框状态
   const isDialogOpen = ref(false)
   const isEditing = ref(false)
+  const isDuplicating = ref(false)
   const editingOriginalName = ref('')
   const deleteConfirmOpen = ref(false)
   const deleteTargetName = ref('')
@@ -369,6 +370,7 @@
     }
     editingOriginalName.value = ''
     isEditing.value = false
+    isDuplicating.value = false
     testBaseURLStatus.value = null
     apiKeyVisible.value = false
   }
@@ -432,13 +434,14 @@
     configForm.value = { ...api }
     editingOriginalName.value = api.name
     isEditing.value = true
+    isDuplicating.value = false
     testBaseURLStatus.value = null
     apiKeyVisible.value = false
     isDialogOpen.value = true
   }
 
   // 复制配置
-  const duplicateApi = (api: ApiConfig) => {
+  const openDuplicateDialog = (api: ApiConfig) => {
     // 生成新的唯一名称
     let newName = `${api.name} (复制)`
     let counter = 1
@@ -457,6 +460,7 @@
     }
     editingOriginalName.value = ''
     isEditing.value = false
+    isDuplicating.value = true
     testBaseURLStatus.value = null
     isDialogOpen.value = true
   }
@@ -513,7 +517,7 @@
   }
 
   // 删除配置
-  const deleteApi = (name: string) => {
+  const openDeleteDialog = (name: string) => {
     deleteTargetName.value = name
     deleteConfirmOpen.value = true
   }
