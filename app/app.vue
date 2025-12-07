@@ -1,6 +1,6 @@
 <template>
 <div class="min-h-screen flex flex-col">
-  <div class="flex justify-end items-center p-4 gap-2">
+  <div class="flex justify-end items-center px-4 pt-2 gap-2">
     <Button variant="ghost" size="icon" @click="toggleDarkMode" class="no-hover" :title="colorMode.value === 'dark' ? '切换到浅色模式' : '切换到深色模式'">
       <Sun v-if="colorMode.value !== 'dark'" class="h-5 w-5" />
       <Moon v-else class="h-5 w-5" />

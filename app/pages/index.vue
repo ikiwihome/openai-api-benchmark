@@ -1,10 +1,10 @@
 <template>
 <div>
   <Toaster position="bottom-right" />
-  <div v-if="!isHydrated" class="container mx-auto py-8 px-4 text-center text-muted-foreground">
+  <div v-if="!isHydrated" class="container mx-auto py-4 px-4 text-center text-muted-foreground">
     加载本地配置...
   </div>
-  <div v-else class="container mx-auto py-8 px-4">
+  <div v-else class="container mx-auto py-4 px-4">
     <input type="file" ref="fileInput" accept=".json,application/json" class="hidden" @change="handleImportFile" />
   <div class="space-y-8">
     <!-- 标题区域 -->
@@ -13,8 +13,8 @@
       <p class="text-sm md:text-lg text-muted-foreground">
         测试多家兼容OpenAI API格式的API提供商，测量首字时延和每秒token数
       </p>
-      <p class="text-sm md:text-lg text-muted-foreground">
-        所有配置数据均保存在浏览器本地
+      <p class="text-xs md:text-md text-muted-foreground">
+        数据安全：本工具所有配置数据均保存在浏览器本地，不会上传到任何服务器
       </p>
     </div>
 
@@ -23,15 +23,15 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-2">
         <h2 class="text-lg md:text-xl font-semibold">API配置列表</h2>
         <div class="flex items-center gap-2 flex-wrap">
-          <Button @click="openAddDialog" variant="outline" size="sm" class="text-sm">
+          <Button @click="openAddDialog" variant="outline" size="sm" class="text-sm cursor-pointer">
             <Plus class="w-4 h-4 mr-1 md:mr-2" />
             添加配置
           </Button>
-          <Button @click="triggerImport" variant="outline" size="sm" class="text-sm">
+          <Button @click="triggerImport" variant="outline" size="sm" class="text-sm cursor-pointer ">
             <UploadCloud class="w-4 h-4 mr-1 md:mr-2" />
             导入配置
           </Button>
-          <Button @click="exportConfigs" variant="outline" size="sm" class="text-sm">
+          <Button @click="exportConfigs" variant="outline" size="sm" class="text-sm cursor-pointer">
             <DownloadCloud class="w-4 h-4 mr-1 md:mr-2" />
             导出配置
           </Button>
@@ -39,14 +39,14 @@
       </div>
 
       <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        <Card v-for="api in apiConfigs" :key="api.name" class="p-3 md:p-4 transition-all duration-200 border-primary/50 shadow-sm">
+        <Card v-for="api in apiConfigs" :key="api.name" class="api-card p-3 md:p-4 transition-all duration-300 border-primary/50 shadow-sm hover:shadow-lg hover:border-primary/80" @click="handleCardClick(api, $event)">
           <CardHeader class="p-0">
             <div class="flex items-start justify-between gap-2 mb-3">
               <CardTitle class="text-base md:text-lg font-medium truncate flex-1" :title="api.name">
                 {{ api.name }}
               </CardTitle>
               <div class="flex items-center gap-1 shrink-0">
-                <Switch :checked="api.enabled" :model-value="api.enabled" @update:checked="(val: boolean) => handleEnabledChange(api, val)" @update:modelValue="(val: boolean) => handleEnabledChange(api, val)" @change="(val: boolean) => handleEnabledChange(api, val)" @click="() => handleEnabledChange(api, !api.enabled)" />
+                <Switch class="cursor-pointer" :checked="api.enabled" :model-value="api.enabled" @update:checked="(val: boolean) => handleEnabledChange(api, val)" @update:modelValue="(val: boolean) => handleEnabledChange(api, val)" @change="(val: boolean) => handleEnabledChange(api, val)" @click="() => handleEnabledChange(api, !api.enabled)" />
               </div>
             </div>
           </CardHeader>
@@ -65,13 +65,13 @@
             </div>
 
             <div class="flex items-center gap-1 md:gap-2 pt-2 md:pt-3 border-t">
-              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8" @click="openEditDialog(api)" :title="'编辑此配置'">
+              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8 cursor-pointer" @click="openEditDialog(api)" :title="'编辑此配置'">
                 <Pencil class="w-3.5 md:w-4 h-3.5 md:h-4" />
               </Button>
-              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8" @click="openDuplicateDialog(api)" :title="'复制此配置'">
+              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8 cursor-pointer" @click="openDuplicateDialog(api)" :title="'复制此配置'">
                 <Copy class="w-3.5 md:w-4 h-3.5 md:h-4" />
               </Button>
-              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8 text-destructive hover:text-destructive" @click="openDeleteDialog(api.name)" :title="'删除此配置'">
+              <Button variant="ghost" size="icon" class="h-7 md:h-8 w-7 md:w-8 text-destructive hover:text-destructive cursor-pointer" @click="openDeleteDialog(api.name)" :title="'删除此配置'">
                 <Trash2 class="w-3.5 md:w-4 h-3.5 md:h-4" />
               </Button>
             </div>
@@ -173,7 +173,7 @@
         <!-- 测试消息输入 -->
         <div class="space-y-2">
           <Label for="test-message" class="text-xs md:text-sm">测试消息</Label>
-          <Textarea id="test-message" v-model="testMessage" placeholder="输入要发送的测试消息..." class="min-h-16 md:min-h-20 text-xs md:text-sm" />
+          <Textarea id="test-message" v-model="testMessage" placeholder="输入要发送的测试消息..." class="min-h-16 md:min-h-20 text-xs md:text-sm resize-none" />
         </div>
 
         <!-- 最大输出Token数 -->
@@ -198,7 +198,7 @@
 
         <!-- 控制按钮 -->
         <div class="flex gap-3">
-          <Button @click="startTesting" :disabled="isTesting || !hasEnabledApis" class="flex-1 flex items-center justify-center gap-2 text-xs md:text-sm">
+          <Button @click="startTesting" :disabled="isTesting || !hasEnabledApis" class="flex-1 flex items-center justify-center gap-2 text-xs md:text-sm cursor-pointer">
             <Spinner v-if="isTesting" class="h-3.5 w-3.5 md:h-4 md:w-4" />
             {{ isTesting ? '测试中...' : '开始测试' }}
           </Button>
@@ -333,6 +333,33 @@
     } else {
       toast.error(message)
     }
+  }
+
+  // 复制配置到剪贴板
+  const copyConfigToClipboard = async (api: ApiConfig) => {
+    const configText = `name: ${api.name}
+base_url: ${api.base_url}
+api_key: ${api.api_key}
+model: ${api.model}`
+
+    try {
+      await navigator.clipboard.writeText(configText)
+      showToast('success', `已复制配置 "${api.name}" 到剪贴板`)
+    } catch (err) {
+      console.error('复制失败:', err)
+      showToast('error', '复制到剪贴板失败')
+    }
+  }
+
+  // 处理卡片点击事件
+  const handleCardClick = (api: ApiConfig, event: MouseEvent) => {
+    // 检查是否点击在按钮或开关上
+    const target = event.target as HTMLElement
+    if (target.closest('button') || target.closest('[role="switch"]')) {
+      return
+    }
+    // 执行复制操作
+    copyConfigToClipboard(api)
   }
 
   // 保存所有配置到本地存储
@@ -907,5 +934,21 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+/* API 卡片悬浮效果 */
+.api-card {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.api-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* 平滑过渡 */
+.api-card * {
+  transition: color 0.3s ease, background-color 0.3s ease;
 }
 </style>
