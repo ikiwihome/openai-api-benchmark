@@ -1,5 +1,6 @@
 <template>
 <div>
+  <Toaster position="bottom-right" />
   <div v-if="!isHydrated" class="container mx-auto py-8 px-4 text-center text-muted-foreground">
     加载本地配置...
   </div>
@@ -135,10 +136,7 @@
         </div>
         <DialogFooter class="flex gap-2 pt-4">
           <Button variant="outline" @click="testBaseURL" :disabled="!configForm.base_url || !configForm.api_key || isTestingBaseURL" class="flex items-center gap-2">
-            <svg v-if="isTestingBaseURL" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+            <Spinner v-if="isTestingBaseURL" />
             {{ isTestingBaseURL ? '测试中...' : '测试' }}
           </Button>
           <Button variant="outline" @click="isDialogOpen = false">取消</Button>
@@ -201,10 +199,7 @@
         <!-- 控制按钮 -->
         <div class="flex gap-3">
           <Button @click="startTesting" :disabled="isTesting || !hasEnabledApis" class="flex-1 flex items-center justify-center gap-2 text-xs md:text-sm">
-            <svg v-if="isTesting" class="animate-spin h-3.5 w-3.5 md:h-4 md:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+            <Spinner v-if="isTesting" class="h-3.5 w-3.5 md:h-4 md:w-4" />
             {{ isTesting ? '测试中...' : '开始测试' }}
           </Button>
         </div>
@@ -270,6 +265,9 @@
   } from '~/components/ui/dialog'
   import { Input } from '~/components/ui/input'
   import { Plus, Pencil, Trash2, UploadCloud, DownloadCloud, Copy, Eye, EyeOff } from 'lucide-vue-next'
+  import { Spinner } from '~/components/ui/spinner'
+  import { Toaster } from '~/components/ui/sonner'
+  import { toast } from 'vue-sonner'
   import { encode } from 'gpt-tokenizer'
   import TestResultTable from '~/components/TestResultTable.vue'
 
@@ -326,6 +324,15 @@
   const loadApiConfigs = () => {
     // useStorage 会自动从 localStorage 恢复数据；若无数据则使用默认空数组
     initializeTestResults()
+  }
+
+  // 显示 Toast 提示
+  const showToast = (type: 'success' | 'error', message: string) => {
+    if (type === 'success') {
+      toast.success(message)
+    } else {
+      toast.error(message)
+    }
   }
 
   // 保存所有配置到本地存储
@@ -482,7 +489,7 @@
       // 添加新配置
       // 检查名称是否重复
       if (apiConfigs.value.some(api => api.name === newConfig.name)) {
-        alert('配置名称已存在，请使用其他名称')
+        showToast('error', '配置名称已存在，请使用其他名称')
         return
       }
       apiConfigs.value.push(newConfig)
@@ -814,7 +821,7 @@
       }
 
       if (!newApis) {
-        alert('导入的 JSON 格式不正确，需为数组或包含 `apis` 字段的对象')
+        showToast('error', '导入的 JSON 格式不正确，需为数组或包含 `apis` 字段的对象')
         return
       }
 
@@ -827,7 +834,7 @@
         item.base_url.trim() !== ''
       )
       if (!valid) {
-        alert('导入的配置格式错误：每项必须包含有效的 name 和 base_url 字段')
+        showToast('error', '导入的配置格式错误：每项必须包含有效的 name 和 base_url 字段')
         return
       }
 
@@ -841,10 +848,10 @@
       }))
 
       initializeTestResults()
-      alert('导入配置成功')
+      showToast('success', '导入配置成功')
     } catch (err) {
       console.error('导入配置失败', err)
-      alert('导入配置失败：文件不是有效的 JSON')
+      showToast('error', '导入配置失败：文件不是有效的 JSON')
     } finally {
       // 清空 input，以便下次选择同一文件仍会触发 change
       if (fileInput.value) fileInput.value.value = ''
@@ -888,9 +895,10 @@
       a.click()
       a.remove()
       URL.revokeObjectURL(url)
+      showToast('success', '导出配置成功')
     } catch (e) {
       console.error('导出失败', e)
-      alert('导出配置失败')
+      showToast('error', '导出配置失败')
     }
   }
 </script>
