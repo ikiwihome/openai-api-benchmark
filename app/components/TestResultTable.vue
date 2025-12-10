@@ -6,7 +6,12 @@
           <h4 v-if="title" :class="['text-md pt-6', title.includes('当前测试') ? 'font-bold' : 'font-medium']">{{ title }}</h4>
           <div v-if="description" class="text-sm text-muted-foreground">{{ description }}</div>
         </div>
-        <slot name="extra" />
+        <div class="flex items-center gap-2">
+          <slot name="extra" />
+          <Button v-if="runAt" variant="ghost" size="icon" class="h-7 w-7 mt-6 text-destructive hover:text-destructive cursor-pointer" @click="emit('delete', runAt)" title="删除此次测试记录">
+            <Trash2 class="w-4 h-4" />
+          </Button>
+        </div>
       </div>
       <!-- 使用 table-layout: fixed 强制固定列宽，避免内容长度不同导致列不对齐 -->
       <div class="w-full overflow-x-auto">
@@ -60,6 +65,12 @@
 <script setup lang="ts">
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '~/components/ui/table'
 import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { Trash2 } from 'lucide-vue-next'
+
+const emit = defineEmits<{
+  (e: 'delete', runAt: string): void
+}>()
 
 const props = defineProps<{
   title?: string

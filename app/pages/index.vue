@@ -149,6 +149,22 @@
         </DialogContent>
       </Dialog>
 
+      <!-- 删除测试历史确认对话框 -->
+      <Dialog :open="deleteHistoryConfirmOpen" @update:open="deleteHistoryConfirmOpen = $event">
+        <DialogContent class="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>删除测试记录</DialogTitle>
+            <DialogDescription>
+              确定要删除 <span class="font-semibold text-foreground">{{ deleteHistoryTargetTime }}</span> 的测试记录吗？此操作无法撤销。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter class="flex gap-2 pt-4">
+            <Button variant="outline" @click="cancelDeleteHistory">取消</Button>
+            <Button variant="destructive" @click="confirmDeleteHistory">删除</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <!-- 测试控制区域 -->
       <Card class="p-3 md:p-6">
         <CardHeader class="p-0 pb-3 md:pb-4">
@@ -201,7 +217,7 @@
             <div v-if="!testHistory || testHistory.length === 0" class="p-4 text-muted-foreground">暂无测试历史</div>
 
             <div>
-              <TestResultTable v-for="run in testHistory" :key="run.runAt" :title="'测试时间：' + new Date(run.runAt).toLocaleString()" :results="run.results" :runAt="run.runAt" :getResultBadgeVariant="getResultBadgeVariant" :getResultStatusText="getResultStatusText" />
+              <TestResultTable v-for="run in testHistory" :key="run.runAt" :title="'测试时间：' + new Date(run.runAt).toLocaleString()" :results="run.results" :runAt="run.runAt" :getResultBadgeVariant="getResultBadgeVariant" :getResultStatusText="getResultStatusText" @delete="openDeleteHistoryDialog" />
             </div>
           </div>
         </CardContent>
@@ -274,6 +290,9 @@
   const editingOriginalName = ref('')
   const deleteConfirmOpen = ref(false)
   const deleteTargetName = ref('')
+  const deleteHistoryConfirmOpen = ref(false)
+  const deleteHistoryTargetRunAt = ref('')
+  const deleteHistoryTargetTime = ref('')
   const configForm = ref<ApiConfig>({
     name: '',
     base_url: '',
@@ -539,6 +558,33 @@ model: ${api.model}`
   const cancelDeleteApi = () => {
     deleteConfirmOpen.value = false
     deleteTargetName.value = ''
+  }
+
+  // 打开删除测试历史确认对话框
+  const openDeleteHistoryDialog = (runAt: string) => {
+    deleteHistoryTargetRunAt.value = runAt
+    deleteHistoryTargetTime.value = new Date(runAt).toLocaleString()
+    deleteHistoryConfirmOpen.value = true
+  }
+
+  // 确认删除测试历史
+  const confirmDeleteHistory = () => {
+    const runAt = deleteHistoryTargetRunAt.value
+    const index = testHistory.value.findIndex(h => h.runAt === runAt)
+    if (index !== -1) {
+      testHistory.value.splice(index, 1)
+      showToast('success', '已删除测试记录')
+    }
+    deleteHistoryConfirmOpen.value = false
+    deleteHistoryTargetRunAt.value = ''
+    deleteHistoryTargetTime.value = ''
+  }
+
+  // 取消删除测试历史
+  const cancelDeleteHistory = () => {
+    deleteHistoryConfirmOpen.value = false
+    deleteHistoryTargetRunAt.value = ''
+    deleteHistoryTargetTime.value = ''
   }
 
   // 计算属性
