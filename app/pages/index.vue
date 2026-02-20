@@ -662,7 +662,10 @@ model: ${api.model}`
           stream_options: {
             include_usage: true
           },
-          max_tokens: maxTokens.value
+          max_tokens: maxTokens.value,
+          reasoning: {
+            effort: 'none'
+          }
         })
       })
 
